@@ -6,28 +6,36 @@
 #   1. Banco de dados relacional (PostgreSQL 16 Alpine)
 #   2. Backend corporativo REST (Spring Boot 4 / Java 25 Layered)
 #   3. Frontend SPA (React + Vite) empacotado em Nginx Alpine com Gzip
+#
+# FONTE ÚNICA DE CREDENCIAIS: ./server/.env
 # ==============================================================================
 
 services:
 
   # -------------------------------------------------------------
-  # 1. Banco de Dados PostgreSQL
+  # 1. Banco de Dados PostgreSQL (Lê credenciais de ./server/.env)
   # -------------------------------------------------------------
   db:
     image: postgres:16-alpine
     container_name: tcc-postgres-db
     restart: unless-stopped
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-tcc_db}
-      POSTGRES_USER: ${POSTGRESSQL_USER:-tcc_user}
-      POSTGRES_PASSWORD: ${POSTGRESSQL_PASSWORD:-tcc_pass}
+    env_file:
+      - ./server/.env
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        export POSTGRES_DB="$${POSTGRES_DB:-tcc_db}"
+        export POSTGRES_USER="$${POSTGRESSQL_USER:-$${SPRING_DATASOURCE_USERNAME:-tcc_user}}"
+        export POSTGRES_PASSWORD="$${POSTGRESSQL_PASSWORD:-$${SPRING_DATASOURCE_PASSWORD:-tcc_pass}}"
+        exec docker-entrypoint.sh postgres
     ports:
       # Restrito ao loopback (127.0.0.1) para segurança em nuvem (acessível via SSH tunnel / local)
       - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRESSQL_USER:-tcc_user} -d ${POSTGRES_DB:-tcc_db}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRESSQL_USER:-$${SPRING_DATASOURCE_USERNAME:-tcc_user}} -d $${POSTGRES_DB:-tcc_db}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -51,12 +59,8 @@ services:
     env_file:
       - ./server/.env
     environment:
-      # Sobrescreve as variáveis necessárias para a rede interna dos containers
       POSTGRESSQL_URL: jdbc:postgresql://db:5432/tcc_db
-      POSTGRESSQL_USER: ${POSTGRESSQL_USER:-tcc_user}
-      POSTGRESSQL_PASSWORD: ${POSTGRESSQL_PASSWORD:-tcc_pass}
       SERVER_FORWARD_HEADERS_STRATEGY: framework
-      COOKIE_SECURE: ${COOKIE_SECURE:-false}
     ports:
       # Restrito ao loopback (127.0.0.1); o tráfego público passa pelo Nginx (serviço 'web')
       - "127.0.0.1:${SERVER_PORT:-8080}:8080"
@@ -81,7 +85,7 @@ services:
     container_name: tcc-frontend-app
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-80}:80" # Porta pública onde o usuário acessa no navegador
+      - "127.0.0.1:${WEB_PORT:-3000}:80"
     depends_on:
       - server
     logging:

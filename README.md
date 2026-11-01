@@ -90,7 +90,7 @@ Ao iniciar os serviços com o Docker Compose, as seguintes portas estarão dispo
 
 | Serviço | Container | Porta Local | Descrição |
 | :--- | :--- | :--- | :--- |
-| **Web Frontend** | `tcc-frontend-app` | `http://localhost` (:80) | Interface principal da aplicação (SPA React servida via Nginx) |
+| **Web Frontend** | `tcc-frontend-app` | `http://localhost:3000` (:3000 -> :80) | Interface principal da aplicação (SPA React + Proxy interno Nginx) |
 | **Backend REST API** | `tcc-backend-app` | `http://localhost:8080` | Endpoints da API REST Spring Boot |
 | **Swagger UI** | `tcc-backend-app` | `http://localhost:8080/swagger` | Documentação interativa OpenAPI dos endpoints |
 | **PostgreSQL** | `tcc-postgres-db` | `localhost:5432` | Banco de dados relacional (`tcc_db` / `tcc_user`) |
