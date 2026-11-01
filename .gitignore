@@ -1,0 +1,102 @@
+# ==============================================================================
+# .gitignore - Repositório Principal TCC (Full-Stack Orchestration)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# IDEs & Editores
+# ------------------------------------------------------------------------------
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+*.code-workspace
+*.sw?
+*~
+*.bak
+*.orig
+
+# ------------------------------------------------------------------------------
+# Arquivos de Sistema Operacional
+# ------------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ------------------------------------------------------------------------------
+# Variáveis de Ambiente & Segredos
+# ------------------------------------------------------------------------------
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Chaves privadas, certificados e tokens de segurança
+*.pem
+*.key
+*.cer
+*.crt
+*.p12
+*.pfx
+*.jks
+
+# ------------------------------------------------------------------------------
+# Builds, Pacotes & Dependências
+# ------------------------------------------------------------------------------
+node_modules/
+dist/
+build/
+target/
+*.class
+*.jar
+*.war
+.pnpm-store/
+
+# ------------------------------------------------------------------------------
+# Testes & Cobertura
+# ------------------------------------------------------------------------------
+coverage/
+.nyc_output/
+*.lcov
+
+# ------------------------------------------------------------------------------
+# Logs & Arquivos de Cache / Temporários
+# ------------------------------------------------------------------------------
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.eslintcache
+.parcel-cache/
+*.tmp
+*.temp
+
+# ------------------------------------------------------------------------------
+# Docker & Volumes Locais / Dumps de Banco de Dados
+# ------------------------------------------------------------------------------
+docker-compose.override.yml
+pgdata/
+data/
+*.dump
+*.sql.gz
+
+# ------------------------------------------------------------------------------
+# Ferramentas de IA & Grafo de Conhecimento
+# ------------------------------------------------------------------------------
+graphify-out/
+**/graphify-out/
+.gemini/
+.claude/
+.antigravity/
+.cursor/
+.windsurf/

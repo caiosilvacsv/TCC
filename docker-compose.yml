@@ -1,0 +1,87 @@
+# ==============================================================================
+# Docker Compose Unificado - TCC IFNMG PagTesouro (Full-Stack)
+# Repositório Principal: https://github.com/caiosilvacsv/TCC
+# ==============================================================================
+# Sobe de forma orquestrada todo o ecossistema com um único comando:
+#   1. Banco de dados relacional (PostgreSQL 16)
+#   2. Backend corporativo REST (Spring Boot 4 / Java 25)
+#   3. Frontend SPA (React + Vite) empacotado em Nginx de alta performance
+# ==============================================================================
+
+services:
+
+  # -------------------------------------------------------------
+  # 1. Banco de Dados PostgreSQL
+  # -------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: tcc-postgres-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tcc_db}
+      POSTGRES_USER: ${POSTGRESSQL_USER:-tcc_user}
+      POSTGRES_PASSWORD: ${POSTGRESSQL_PASSWORD:-tcc_pass}
+    ports:
+      - "${DB_PORT:-5432}:5432" # Expõe a porta para auditoria via DBeaver / pgAdmin / DataGrip
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRESSQL_USER:-tcc_user} -d ${POSTGRES_DB:-tcc_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - tcc-network
+
+  # -------------------------------------------------------------
+  # 2. Backend Spring Boot (tcc-server)
+  # -------------------------------------------------------------
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: tcc-backend-app
+    restart: unless-stopped
+    env_file:
+      - ./server/.env
+    environment:
+      # Sobrescreve as variáveis necessárias para a rede interna dos containers
+      POSTGRESSQL_URL: jdbc:postgresql://db:5432/tcc_db
+      POSTGRESSQL_USER: ${POSTGRESSQL_USER:-tcc_user}
+      POSTGRESSQL_PASSWORD: ${POSTGRESSQL_PASSWORD:-tcc_pass}
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+    ports:
+      - "${SERVER_PORT:-8080}:8080" # Acesso direto à API e Swagger UI (http://localhost:8080/swagger)
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - tcc-network
+
+  # -------------------------------------------------------------
+  # 3. Frontend React SPA + Servidor Borda Nginx (tcc-web)
+  # -------------------------------------------------------------
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: tcc-frontend-app
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-80}:80" # Porta principal onde o usuário acessa no navegador (http://localhost)
+    depends_on:
+      - server
+    networks:
+      - tcc-network
+
+# -------------------------------------------------------------
+# Volumes Persistentes e Redes Compartilhadas
+# -------------------------------------------------------------
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  tcc-network:
+    driver: bridge
