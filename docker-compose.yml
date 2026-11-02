@@ -30,8 +30,8 @@ services:
         export POSTGRES_PASSWORD="$${POSTGRESSQL_PASSWORD:-$${SPRING_DATASOURCE_PASSWORD:-tcc_pass}}"
         exec docker-entrypoint.sh postgres
     ports:
-      # Restrito ao loopback (127.0.0.1) para segurança em nuvem (acessível via SSH tunnel / local)
-      - "127.0.0.1:${DB_PORT:-5432}:5432"
+      # Exposto localmente em 5433 (evita conflito caso exista PostgreSQL nativo instalado na porta 5432 do Windows)
+      - "127.0.0.1:${DB_PORT:-5433}:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
